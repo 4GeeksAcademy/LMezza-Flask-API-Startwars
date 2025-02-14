@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import mapped_column, Mapped
-from sqlalchemy import Integer, String
+from sqlalchemy import Integer, String, ForeignKey
 
 db = SQLAlchemy()
 
@@ -9,14 +9,84 @@ class User(db.Model):
     __tablename__ = "user"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(nullable=False)
     email: Mapped[str] = mapped_column(String(120), nullable=False)
     password: Mapped[str] = mapped_column(String(80))
     is_active: Mapped[bool]
+    
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "email": self.email,
+            "is_active": self.is_active
+            # do not serialize the password, its a security breach
+        }
+
+class Planets(db.Model):
+    __tablename__ = 'planets'
+    
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(nullable=False)
+    climate: Mapped[str] = mapped_column(nullable=False)
+    diameter: Mapped[str] = mapped_column(nullable=False)
+    gravity: Mapped[str] = mapped_column(nullable=False)
+    # favs_planets: Mapped["Favs_planets"] = relationship(back_populates="characters_planets")
+    # favs_planets: Mapped["Favs_characters"] = relationship(back_populates="characters_planets")
 
     def serialize(self):
         return {
             "id": self.id,
-            "email": self.email,
-            "is_active": self.is_active
-            # do not serialize the password, its a security breach
+            "name": self.name,
+            "climate": self.climate,
+            "diameter": self.diameter,
+            "gravity": self.gravity
+        }
+
+class People(db.Model):
+    __tablename__ = 'people'
+    
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(nullable=False)
+    birth_year: Mapped[str] = mapped_column(nullable=False)
+    eye_color: Mapped[str] = mapped_column(nullable=False)
+    hair_color: Mapped[str] = mapped_column(nullable=False)
+    height: Mapped[int] = mapped_column(nullable=False)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "birth_year": self.birth_year,
+            "eye_color": self.eye_color,
+            "hair_color": self.hair_color,
+            "height": self.height
+        }
+    
+class Favs_planets(db.Model):
+    __tablename__ = 'favs_planets'
+    
+    id: Mapped[int] = mapped_column(primary_key=True)
+    users_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+    # users: Mapped["User"] = relationship(back_populates="favs_planets")
+    # charaters_planets_id: Mapped[int] = mapped_column(ForeignKey("characters_planets.id"))
+    # characters_planets: Mapped["Characters_planets"] = relationship(back_populates="favs_planets")
+
+    def serialize(self):
+        return {
+            "id": self.id,
+        }
+
+class Favs_characters(db.Model):
+    __tablename__ = 'favs_characters'
+    
+    id: Mapped[int] = mapped_column(primary_key=True)
+    users_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+    # users: Mapped["User"] = relationship(back_populates="favs_characters")
+    # charaters_planets_id: Mapped[int] = mapped_column(ForeignKey("characters_planets.id"))
+    # characters_planets: Mapped["Characters_planets"] = relationship(back_populates="favs_characters")
+
+    def serialize(self):
+        return {
+            "id": self.id,
         }
