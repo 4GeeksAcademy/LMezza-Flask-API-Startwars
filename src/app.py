@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User, People
+from models import db, User, People, Planets, Favs_planets
 #from models import Person
 
 app = Flask(__name__)
@@ -57,18 +57,65 @@ def get_people():
 
     data = db.session.scalars(db.select(People)).all()
     result = list(map(lambda item: item.serialize(),data))
-    print(result)
+    # print(result)
 
     if result == []:
         return jsonify({"msg":"user does not exists"}), 404
 
     response_body = {
-        "msg":"user does not exists",
+        "msg": "Hello, this is your GET /user response ",
         "results": result
     }
 
     return jsonify(response_body), 200
 
+@app.route('/people/<int:id>', methods=['GET'])
+def get_one_character(id):
+    try:
+        #print(id)
+        people = db.session.execute(db.select(People).filter_by(id=id)).scalar_one()
+    
+        return jsonify({"result":people.serialize()}), 200
+    except:
+        return jsonify({"msg":"user do not exist"}), 404
+
+@app.route('/planets', methods=['GET'])
+def get_planets():
+
+    data = db.session.scalars(db.select(Planets)).all()
+    result = list(map(lambda item: item.serialize(),data))
+    #print(result)
+
+    if result == []:
+        return jsonify({"msg":"user does not exists"}), 404
+
+    response_body = {
+        "msg": "Hello, this is your GET /user response ",
+        "results": result
+    }
+
+    return jsonify(response_body), 200
+
+@app.route('/planets/<int:id>', methods=['GET'])
+def get_one_planet(id):
+    try:
+        #print(id)
+        planet = db.session.execute(db.select(Planets).filter_by(id=id)).scalar_one()
+    
+        return jsonify({"result":planet.serialize()}), 200
+    except:
+        return jsonify({"msg":"user do not exist"}), 404
+
+@app.route('/favsplanets/<int:id>', methods=['POST'])
+def post_fav_planet(id):
+
+    try:
+        print(id)
+        favplanet = db.session.execute(db.insert(Favs_planets).values(id=user.id)).scalar_one()
+    
+        return jsonify({"result":favplanet.serialize()}), 200
+    except:
+        return jsonify({"msg":"user do not exist"}), 404
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':

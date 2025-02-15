@@ -68,23 +68,19 @@ class Favs_planets(db.Model):
     
     id: Mapped[int] = mapped_column(primary_key=True)
     users_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
-    # users: Mapped["User"] = relationship(back_populates="favs_planets")
-    # charaters_planets_id: Mapped[int] = mapped_column(ForeignKey("characters_planets.id"))
-    # characters_planets: Mapped["Characters_planets"] = relationship(back_populates="favs_planets")
-
+    planets_id: Mapped[int] = mapped_column(ForeignKey("planets.id"))
+    
     def serialize(self):
         return {
             "id": self.id,
         }
 
-class Favs_characters(db.Model):
-    __tablename__ = 'favs_characters'
+class Favs_people(db.Model):
+    __tablename__ = 'favs_people'
     
     id: Mapped[int] = mapped_column(primary_key=True)
     users_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
-    # users: Mapped["User"] = relationship(back_populates="favs_characters")
-    # charaters_planets_id: Mapped[int] = mapped_column(ForeignKey("characters_planets.id"))
-    # characters_planets: Mapped["Characters_planets"] = relationship(back_populates="favs_characters")
+    people_id: Mapped[int] = mapped_column(ForeignKey("people.id"))
 
     def serialize(self):
         return {
