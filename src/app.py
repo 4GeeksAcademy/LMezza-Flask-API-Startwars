@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User, People, Planets, Favs_planets
+from models import db, User, People, Planets, Favs_planets, Favs_people
 #from models import Person
 
 app = Flask(__name__)
@@ -109,8 +109,8 @@ def get_one_planet(id):
 @app.route('/favsplanets/<int:id>', methods=['POST'])
 def post_fav_planet(id):
     body_data = request.json
-    print(body_data)
-    print(body_data["planet_id"])
+    # print(body_data)
+    # print(body_data["planet_id"])
     # print(id)
     try:
         favs_planets = db.session.execute(db.select(Favs_planets).filter_by(users_id=body_data["user_id"]).filter_by(planets_id=body_data["planet_id"])).scalar_one()
@@ -120,8 +120,7 @@ def post_fav_planet(id):
         favs_planets = Favs_planets(users_id=body_data["user_id"], planets_id=body_data["planet_id"])
         db.session.add(favs_planets)
         db.session.commit()
-        print(favs_planets.serialize())
-        print(favs_planets["id"].serialize())
+        #print(favs_planets.serialize())
 
         response_body = {
             "favs_planets": favs_planets.serialize()
@@ -129,12 +128,27 @@ def post_fav_planet(id):
 
         return jsonify(response_body), 200
 
+@app.route('/favspeople/<int:id>', methods=['POST'])
+def post_fav_people(id):
+    body_data = request.json
+    print(body_data)
+    print(body_data["people_id"])
+    # print(id)
+    try:
+        favs_people = db.session.execute(db.select(Favs_people).filter_by(users_id=body_data["user_id"]).filter_by(people_id=body_data["people_id"])).scalar_one()
 
+        return jsonify({"result":"ok"}), 400
+    except:
+        favs_people = Favs_people(users_id=body_data["user_id"], people_id=body_data["people_id"])
+        db.session.add(favs_people)
+        db.session.commit()
+        print(favs_people.serialize())
 
+        response_body = {
+            "favs_people": favs_people.serialize()
+        }
 
-        #return jsonify({"result":favs_planets.serialize()}), 200
-    
-
+        return jsonify(response_body), 200
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':

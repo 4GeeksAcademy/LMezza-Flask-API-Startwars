@@ -23,6 +23,22 @@ class User(db.Model):
             # do not serialize the password, its a security breach
         }
 
+class User_favs(db.Model):
+    __tablename__ = "user_favs"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    favs_people_id: Mapped[int] = mapped_column(ForeignKey("favs_people.id"))
+    favs_planets_id: Mapped[int] = mapped_column(ForeignKey("favs_planets.id"))
+    
+    def serialize(self):
+        favs_people = db.session.execute(db.select(Favs_people).filter_by(id=self.favs_people_id)).scalar_one()
+        favs_planets = db.session.execute(db.select(Favs_planets).filter_by(id=self.favs_planets_id)).scalar_one()
+        return {
+            "id": self.id,
+            "favs_people": favs_people.serialize(),
+            "favs_planets": favs_planets.serialize()
+        }
+    
 class Planets(db.Model):
     __tablename__ = 'planets'
     
@@ -31,8 +47,6 @@ class Planets(db.Model):
     climate: Mapped[str] = mapped_column(nullable=False)
     diameter: Mapped[str] = mapped_column(nullable=False)
     gravity: Mapped[str] = mapped_column(nullable=False)
-    # favs_planets: Mapped["Favs_planets"] = relationship(back_populates="characters_planets")
-    # favs_planets: Mapped["Favs_characters"] = relationship(back_populates="characters_planets")
 
     def serialize(self):
         return {
@@ -85,6 +99,8 @@ class Favs_people(db.Model):
     people_id: Mapped[int] = mapped_column(ForeignKey("people.id"))
 
     def serialize(self):
+        people = db.session.execute(db.select(People).filter_by(id=self.people_id)).scalar_one()
         return {
-            "id": self.id
+            "id": self.id,
+            "people": people.serialize()
         }
