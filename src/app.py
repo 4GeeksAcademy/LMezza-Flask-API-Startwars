@@ -108,14 +108,33 @@ def get_one_planet(id):
 
 @app.route('/favsplanets/<int:id>', methods=['POST'])
 def post_fav_planet(id):
-
+    body_data = request.json
+    print(body_data)
+    print(body_data["planet_id"])
+    # print(id)
     try:
-        print(id)
-        favplanet = db.session.execute(db.insert(Favs_planets).values(id=user.id)).scalar_one()
-    
-        return jsonify({"result":favplanet.serialize()}), 200
+        favs_planets = db.session.execute(db.select(Favs_planets).filter_by(users_id=body_data["user_id"]).filter_by(planets_id=body_data["planet_id"])).scalar_one()
+
+        return jsonify({"result":"ok"}), 400
     except:
-        return jsonify({"msg":"user do not exist"}), 404
+        favs_planets = Favs_planets(users_id=body_data["user_id"], planets_id=body_data["planet_id"])
+        db.session.add(favs_planets)
+        db.session.commit()
+        print(favs_planets.serialize())
+        print(favs_planets["id"].serialize())
+
+        response_body = {
+            "favs_planets": favs_planets.serialize()
+        }
+
+        return jsonify(response_body), 200
+
+
+
+
+        #return jsonify({"result":favs_planets.serialize()}), 200
+    
+
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':

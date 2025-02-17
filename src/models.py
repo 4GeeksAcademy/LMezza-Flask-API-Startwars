@@ -71,8 +71,10 @@ class Favs_planets(db.Model):
     planets_id: Mapped[int] = mapped_column(ForeignKey("planets.id"))
     
     def serialize(self):
+        planet = db.session.execute(db.select(Planets).filter_by(id=self.planets_id)).scalar_one()
         return {
             "id": self.id,
+            "planet": planet.serialize()
         }
 
 class Favs_people(db.Model):
@@ -84,5 +86,5 @@ class Favs_people(db.Model):
 
     def serialize(self):
         return {
-            "id": self.id,
+            "id": self.id
         }
