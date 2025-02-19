@@ -52,6 +52,19 @@ def get_all_users():
 
     return jsonify(response_body), 200
 
+@app.route('/user_favs/<int:id>', methods=['GET'])
+def favs_user(id):
+    # try:
+    #     user_query = db.session.execute(db.select(User).filter_by(id=id)).scalar_one()
+    #     db.session.delete(user_query)
+    #     db.session.commit()
+    
+
+    #     return jsonify({"msg":"user deleted"}), 200
+    # except:
+
+        return jsonify({"msg":"user not exist"}), 404
+
 @app.route('/people', methods=['GET'])
 def get_people():
 
@@ -115,7 +128,7 @@ def post_fav_planet(id):
     try:
         favs_planets = db.session.execute(db.select(Favs_planets).filter_by(users_id=body_data["user_id"]).filter_by(planets_id=body_data["planet_id"])).scalar_one()
 
-        return jsonify({"result":"ok"}), 400
+        return jsonify({"result":"Fav does not exit"}), 400
     except:
         favs_planets = Favs_planets(users_id=body_data["user_id"], planets_id=body_data["planet_id"])
         db.session.add(favs_planets)
