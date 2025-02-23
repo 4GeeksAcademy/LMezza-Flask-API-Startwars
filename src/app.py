@@ -10,6 +10,7 @@ from utils import APIException, generate_sitemap
 from admin import setup_admin
 from models import db, User, People, Planets, Favs_planets, Favs_people
 #from models import Person
+from sqlalchemy.exc import NoResultFound
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
@@ -36,6 +37,7 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
+#Listar todos los user LISTO
 @app.route('/user', methods=['GET'])
 def get_all_users():
 
@@ -52,19 +54,31 @@ def get_all_users():
 
     return jsonify(response_body), 200
 
+
+#Listar todos los favs de cada user LISTO
 @app.route('/user_favs/<int:id>', methods=['GET'])
 def favs_user(id):
-    # try:
-    #     user_query = db.session.execute(db.select(User).filter_by(id=id)).scalar_one()
-    #     db.session.delete(user_query)
-    #     db.session.commit()
-    
+    try:
+        planets = list(db.session.execute(db.select(Favs_planets).filter_by(users_id=id)).scalars())
+        people = list(db.session.execute(db.select(Favs_people).filter_by(users_id=id)).scalars())
+        # print(planets)
+        # print(people)
+        result_planets = list(map(lambda item: item.serialize(), planets))
+        #print (result_planets)
+        result_people = list(map(lambda item: item.serialize(), people))
+        #print (result_people)
 
-    #     return jsonify({"msg":"user deleted"}), 200
-    # except:
+        result = {
+            "result_planets": result_planets, 
+            "result_people": result_people
+        }
+        #print(results)
 
-        return jsonify({"msg":"user not exist"}), 404
+        return jsonify({"result": result}), 200
+    except NoResultFound:
+        return jsonify({"msg": "User does not exist"}), 404
 
+#Listar todo de People LISTO
 @app.route('/people', methods=['GET'])
 def get_people():
 
@@ -76,12 +90,12 @@ def get_people():
         return jsonify({"msg":"user does not exists"}), 404
 
     response_body = {
-        "msg": "Hello, this is your GET /user response ",
         "results": result
     }
 
     return jsonify(response_body), 200
 
+#Listar a PEOPLE por ID LISTO
 @app.route('/people/<int:id>', methods=['GET'])
 def get_one_character(id):
     try:
@@ -92,6 +106,7 @@ def get_one_character(id):
     except:
         return jsonify({"msg":"user do not exist"}), 404
 
+#Listar todos los PLANETS LISTO
 @app.route('/planets', methods=['GET'])
 def get_planets():
 
@@ -109,6 +124,7 @@ def get_planets():
 
     return jsonify(response_body), 200
 
+#Listar PLANETS por ID_USER LISTO
 @app.route('/planets/<int:id>', methods=['GET'])
 def get_one_planet(id):
     try:
@@ -119,6 +135,7 @@ def get_one_planet(id):
     except:
         return jsonify({"msg":"user do not exist"}), 404
 
+#Crear un FAV_PLANET LISTO
 @app.route('/favsplanets/<int:id>', methods=['POST'])
 def post_fav_planet(id):
     body_data = request.json
@@ -141,6 +158,7 @@ def post_fav_planet(id):
 
         return jsonify(response_body), 200
 
+#Crear un FAV_PEOPLE LISTO
 @app.route('/favspeople/<int:id>', methods=['POST'])
 def post_fav_people(id):
     body_data = request.json
@@ -163,6 +181,37 @@ def post_fav_people(id):
 
         return jsonify(response_body), 200
 
+#Borrar PLANET usando ID_PLANET LISTO
+@app.route('/favsplanets/<int:id>', methods=['DELETE'])
+def delete_fav_planet(id):
+    #print(id)
+    try:
+        user_query = db.session.execute(db.select(Favs_planets).filter_by(id=id)).scalar_one()
+        db.session.delete(user_query)
+        db.session.commit()
+    
+
+        return jsonify({"msg":"Planet fav delete"}), 200
+    except:
+       
+        return jsonify({"msg":"user not exist"}), 404
+
+#Borrar PEOPLE usando ID_PLEOPLE LISTO
+@app.route('/favspeople/<int:id>', methods=['DELETE'])
+def delete_fav_people(id):
+    #print(id)
+    try:
+        user_query = db.session.execute(db.select(Favs_people).filter_by(id=id)).scalar_one()
+        #print(user_query.serialize())
+        db.session.delete(user_query)
+        db.session.commit()
+    
+
+        return jsonify({"msg":"People fav delete"}), 200
+    except:
+       
+        return jsonify({"msg":"user not exist"}), 404
+    
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3000))
